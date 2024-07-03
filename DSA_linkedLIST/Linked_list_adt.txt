@@ -1,0 +1,293 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+typedef struct node {
+    int data;
+    struct node *next;
+} node;
+
+node* create(int *x, int n) {
+    if (n <= 0) return NULL;
+
+    node* head = (node*)malloc(sizeof(node));
+    head->data = x[0];
+    head->next = NULL;
+    
+    node *last = head;
+
+    for (int i = 1; i < n; i++) {
+        node* temp = (node*)malloc(sizeof(node)); 
+        temp->data = x[i];
+        temp->next = NULL;
+        last->next = temp;
+        last = temp;
+    }
+    
+    return head;
+}
+
+void iterDisplay(node* head) {
+    while (head) {
+        printf("%d ", head->data);
+        head = head->next;
+    }
+    printf("\n");
+}
+
+node* insertSorted(node* head, int data1) {
+    node* newNode = (node*)malloc(sizeof(node));
+    newNode->data = data1;
+    newNode->next = NULL;
+
+    // If the list is empty or the new node should be the new head
+    if (!head || head->data >= data1) {
+        newNode->next = head;
+        head = newNode;
+        return head;
+    }
+
+    node* current = head;
+    while (current->next && current->next->data < data1) {
+        current = current->next;
+    }
+
+    newNode->next = current->next;
+    current->next = newNode;
+
+    return head;
+}
+
+node* delete(node* head, int pos) {
+    if (pos < 1 || pos > count(head)) return head;
+
+    node* p = head;
+    if (pos == 1) {
+        head = head->next;
+        free(p);
+        return head;
+    }
+
+    node* q = NULL;
+    for (int i = 0; i < pos - 1; i++) {
+        q = p;
+        p = p->next;
+    }
+    q->next = p->next;
+    free(p);
+
+    return head;
+}
+
+int count(node* head) {
+    int cnt = 0;
+    while (head) {
+        cnt++;
+        head = head->next;
+    }
+    return cnt;
+}
+
+int checkSorted(node* head) {
+    int min = INT_MIN;
+    while (head) {
+        if (head->data < min) return 0;
+        min = head->data;
+        head = head->next;
+    }
+    return 1;
+}
+
+void duplicate(node* head) {
+    node *p = head;
+    node *q = NULL;
+
+    if (p) q = p->next;
+
+    while (p && q) {
+        if (p->data != q->data) {
+            p = q;
+            q = q->next;
+        } else {
+            p->next = q->next;
+            free(q);
+            q = p->next;
+        }
+    }
+}
+
+node* reverse(node* head) {
+    node* current = head;
+    node* prev = NULL;
+    node* next = NULL;
+
+    while (current != NULL) {
+        next = current->next;
+        current->next = prev;
+        prev = current;
+        current = next;
+    }
+
+    return prev;
+}
+
+node* reverseRecurs(node* q, node* p) {
+    if (p == NULL) {
+        return q;
+    }
+    node* newHead = reverseRecurs(p, p->next);
+    p->next = q;
+    return newHead;
+}
+
+node* concatenate(node *head1, node *head2) {
+    if (head1 == NULL) return head2;
+    if (head2 == NULL) return head1;
+
+    node *current = head1;
+    while (current->next) {
+        current = current->next;
+    }
+    current->next = head2;
+
+    return head1;
+}
+
+node* merge(node *head1, node *head2) {
+    if (head1 == NULL) return head2;
+    if (head2 == NULL) return head1;
+
+    node *last = NULL;
+    node *third = NULL;
+
+    if (head1->data < head2->data) {
+        last = head1;
+        third = last;
+        head1 = head1->next;
+        last->next = NULL;
+    } else {
+        last = head2;
+        third = last;
+        head2 = head2->next;
+        last->next = NULL;
+    }
+
+    node *mergedHead = last;
+
+    while (head1 && head2) {
+        if (head1->data < head2->data) {
+            last->next = head1;
+            last = head1;
+            head1 = head1->next;
+            last->next = NULL;
+        } else {
+            last->next = head2;
+            last = head2;
+            head2 = head2->next;
+            last->next = NULL;
+        }
+    }
+
+    if (head1) {
+        last->next = head1;
+    }
+
+    if (head2) {
+        last->next = head2;
+    }
+
+    return mergedHead;
+}
+
+int isloop(node* head) {
+    if (head == NULL) return 0;  // No loop if the list is empty
+
+    node *p, *q;
+    p = q = head;
+
+    do {
+        p = p->next;
+        q = q->next;
+        q = q ? q->next : NULL;
+    } while (p && q && p != q);
+
+    return p == q ? 1 : 0;
+}
+
+int main() {
+    int a[] = {1, 3, 5, 7, 9};
+
+    node* head = create(a, 5);
+    
+    printf("Initial list:\n");
+    iterDisplay(head);
+    
+    // Insert in a sorted manner
+    head = insertSorted(head, 6);
+    
+    printf("List after inserting 6:\n");
+    iterDisplay(head);
+    
+    // Insert at the beginning in a sorted manner
+    head = insertSorted(head, 0);
+    
+    printf("List after inserting 0:\n");
+    iterDisplay(head);
+    
+    // Insert at the end in a sorted manner
+    head = insertSorted(head, 10);
+    
+    printf("List after inserting 10:\n");
+    iterDisplay(head);
+
+    // Check if the list is sorted
+    if (checkSorted(head)) {
+        printf("The list is sorted.\n");
+    } else {
+        printf("The list is not sorted.\n");
+    }
+
+    // Remove duplicates
+    int b[] = {1, 1, 2, 3, 3, 4, 5, 5, 5};
+    node* headWithDuplicates = create(b, 9);
+    printf("List with duplicates:\n");
+    iterDisplay(headWithDuplicates);
+
+    duplicate(headWithDuplicates);
+    printf("List after removing duplicates:\n");
+    iterDisplay(headWithDuplicates);
+
+    // Reverse the list
+    node* reversedHead = reverse(head);
+    printf("Reversed list:\n");
+    iterDisplay(reversedHead);
+
+    // Merge two sorted lists
+    int c[] = {2, 4, 6, 8, 10};
+    node* head1 = create(c, 5);
+    printf("First sorted list:\n");
+    iterDisplay(head1);
+
+    node* mergedHead = merge(head, head1);
+    printf("Merged list:\n");
+    iterDisplay(mergedHead);
+
+    // Concatenate two lists
+    int d[] = {12, 14, 16};
+    node* head2 = create(d, 3);
+    printf("Second list:\n");
+    iterDisplay(head2);
+
+    node* concatenatedHead = concatenate(head, head2);
+    printf("Concatenated list:\n");
+    iterDisplay(concatenatedHead);
+
+    // Check for loop
+    if (isloop(head)) {
+        printf("The list has a loop.\n");
+    } else {
+        printf("The list does not have a loop.\n");
+    }
+
+    return 0;
+}

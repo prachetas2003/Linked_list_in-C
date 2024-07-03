@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct node {
+    struct node* prev;
+    int data;
+    struct node* next;
+} node;
+
+node* create(int a[], int n) { // Create a circular doubly linked list
+    if (n <= 0) return NULL;
+
+    node* head = (node*)malloc(sizeof(node));
+    head->prev = NULL;
+    head->data = a[0];
+    head->next = NULL;
+    node* last = head;
+
+    for (int i = 1; i < n; i++) {
+        node* temp = (node*)malloc(sizeof(node));
+        temp->data = a[i];
+        temp->prev = last;
+        temp->next = head;
+        last->next = temp;
+        last = temp;
+    }
+    head->prev = last;
+    last->next = head;
+    return head;
+}
+
+node* insert(node* head, int num, int pos) { // Insert node at position pos
+    node* temp = (node*)malloc(sizeof(node));
+    temp->data = num;
+
+    if (pos == 1) {
+        temp->next = head;
+        temp->prev = head->prev;
+        head->prev->next = temp;
+        head->prev = temp;
+        head = temp;
+    } else {
+        node* x = head;
+        for (int i = 0; i < pos - 2; i++) {
+            x = x->next;
+        }
+        temp->next = x->next;
+        temp->prev = x;
+        x->next->prev = temp;
+        x->next = temp;
+    }
+    return head;
+}
+
+node* delete(node* head, int pos) { // Delete node at position pos
+    if (head == NULL || pos <= 0) return head;
+
+    node* x = head;
+
+    if (pos == 1) {
+        if (head->next == head) { // Only one node
+            free(head);
+            return NULL;
+        } else {
+            node* temp = head;
+            head->prev->next = head->next;
+            head->next->prev = head->prev;
+            head = head->next;
+            free(temp);
+        }
+    } else {
+        for (int i = 0; x != NULL && i < pos - 2; i++) {
+            x = x->next;
+        }
+
+        if (x == NULL || x->next == NULL) return head;
+
+        node* temp = x->next;
+        x->next = temp->next;
+        temp->next->prev = x;
+
+        free(temp);
+    }
+    return head;
+}
+
+void printList(node* head) { // Print circular doubly linked list
+    if (head == NULL) return;
+
+    node* current = head;
+    do {
+        printf("%d ", current->data);
+        current = current->next;
+    } while (current != head);
+    printf("\n");
+}
+
+int main() {
+    int a[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    node* list = create(a, 9);
+    printf("Initial list: ");
+    printList(list);
+
+    list = insert(list, 10, 5);
+    printf("After insertion: ");
+    printList(list);
+
+    list = delete(list, 5);
+    printf("After deletion: ");
+    printList(list);
+
+    return 0;
+}

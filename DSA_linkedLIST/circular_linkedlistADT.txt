@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct node {
+    int data;
+    struct node *next;
+} node;
+
+node* create(int *x, int n) {
+    if (n <= 0) return NULL;
+
+    node* head = (node*)malloc(sizeof(node));
+    head->data = x[0];
+    head->next = NULL;
+    
+    node *last = head;
+
+    for (int i = 1; i < n; i++) {
+        node* temp = (node*)malloc(sizeof(node)); 
+        temp->data = x[i];
+        temp->next = NULL;
+        last->next = temp;
+        last = temp;
+    }
+    last->next = head; // Complete the circular link
+    return head;
+}
+
+void display(node *x) {
+    if (x == NULL) return; // Handle empty list
+
+    node *head = x;
+    do {
+        printf("%d ", x->data);
+        x = x->next;
+    } while (x != head);
+    printf("\n");
+}
+
+void display_recursive(node *head, node *current) {
+    if (current == NULL) return; // Safety check for an empty list
+    printf("%d ", current->data);
+    if (current->next != head) {
+        display_recursive(head, current->next);
+    }
+}
+
+void insert(node *first, int num, int pos) {
+    node *new_node = (node*)malloc(sizeof(node));
+    new_node->data = num;
+    if (!first) {
+        first = new_node;
+        new_node->next = new_node;
+        return;
+    }
+    node *p = first;
+    for (int i = 0; i < pos - 1; i++) {
+        p = p->next;
+    }
+    new_node->next = p->next;
+    p->next = new_node;
+}
+
+int length(node* head) {
+    int count = 0;
+    node* new = head;
+    if (!head) {
+        return 0;
+    } else {
+        do { 
+            count++;
+            new = new->next;
+        } while (new != head);
+        return count;
+    }    
+}
+
+node* delete(node* head, int pos) {
+    if (!head) {
+        return NULL;
+    }
+    
+    node* p = head;
+    if (pos == 0) {
+        while (p->next != head) {
+            p = p->next;
+        }
+        if (p == head) {
+            free(head);
+            return NULL; // Only one element was present
+        } else {
+            p->next = head->next;
+            free(head);
+            head = p->next;
+        }
+    } else {
+        for (int i = 0; i < pos - 1 && p->next != head; i++) {
+            p = p->next;
+        }
+        node* q = p->next;
+        p->next = q->next;
+        free(q);
+    }
+    return head;
+}
+
+int main() {
+    int a[] = {12, 13, 14, 15, 16, 17, 18};
+    node *circular = create(a, 7);
+    display(circular);
+
+    circular = delete(circular, 3); // Delete node at position 3
+    display(circular);
+
+    circular = delete(circular, 0); // Delete head node
+    display(circular);
+
+    return 0;
+}

@@ -1,0 +1,124 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct node {
+    struct node* prev;
+    int data;
+    struct node* next;
+} node;
+
+node* create(int a[], int n) {
+    node* head = (node*)malloc(sizeof(node));
+    head->prev = NULL;
+    head->data = a[0];
+    head->next = NULL;
+    node* last = head;
+
+    for (int i = 1; i < n; i++) {
+        node* temp = (node*)malloc(sizeof(node));
+        temp->data = a[i];
+        temp->prev = last;
+        temp->next = NULL;
+        last->next = temp;
+        last = temp;
+    }
+    return head;
+}
+
+void insert(node* head, int num, int pos) { // pos starts from 1 to n
+    node* temp = (node*)malloc(sizeof(node));
+    temp->data = num;
+    node* x = head;
+
+    if (pos == 1) {
+        temp->next = head;
+        temp->prev = NULL;
+        if (head != NULL) head->prev = temp;
+        head = temp;
+    } else {
+        for (int i = 0; i < pos - 2; i++) {
+            x = x->next;
+        }
+        temp->next = x->next;
+        if (x->next != NULL) x->next->prev = temp;
+        x->next = temp;
+        temp->prev = x;
+    }
+}
+
+void delete(node* head, int pos) { // pos starts from 1 to n.
+    if (head == NULL || pos <= 0) return;
+
+    node* x = head;
+
+    if (pos == 1) {
+        node* temp = head;
+        head = head->next;
+        if (head != NULL) head->prev = NULL;
+        free(temp);
+    } else {
+        for (int i = 0; x != NULL && i < pos - 2; i++) {
+            x = x->next;
+        }
+
+        if (x == NULL || x->next == NULL) return;
+
+        node* temp = x->next;
+        x->next = temp->next;
+        if (temp->next != NULL) temp->next->prev = x;
+
+        free(temp);
+    }
+}
+
+node* reverse(node* head) {
+    node* current = head;
+    node* temp = NULL;
+
+    while (current != NULL) {
+        // Swap next and prev for all nodes
+        temp = current->prev;
+        current->prev = current->next;
+        current->next = temp;
+
+        // Move to the next node (which is prev node after swapping)
+        current = current->prev;
+    }
+
+    // Adjust head to the new first node
+    if (temp != NULL) {
+        head = temp->prev;
+    }
+
+    return head;
+}
+
+void printList(node* head) {
+    node* current = head;
+    while (current != NULL) {
+        printf("%d ", current->data);
+        current = current->next;
+    }
+    printf("\n");
+}
+
+int main() {
+    int a[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    node* list = create(a, 9);
+    printf("Initial list: ");
+    printList(list);
+
+    insert(list, 10, 5);
+    printf("After insertion: ");
+    printList(list);
+
+    delete(list, 5);
+    printf("After deletion: ");
+    printList(list);
+
+    list = reverse(list);
+    printf("After reversing: ");
+    printList(list);
+
+    return 0;
+}
